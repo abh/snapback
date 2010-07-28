@@ -1,0 +1,3 @@
+[submodule "static/cdn"]
+	path = static/cdn
+	url = git://git.develooper.com/devcdn.git

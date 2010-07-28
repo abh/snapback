@@ -1,0 +1,7 @@
+Makefile
+config.json
+log/
+
+/db/
+
+*~

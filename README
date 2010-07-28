@@ -1,0 +1,17 @@
+
+git clone git://github.com/abh/snapback
+git submodule update --init
+
+cpan App::cpanminus
+
+# notice missing dependencies
+perl Makefile.PL
+
+# ... and install them
+cpanm --sudo AnyEvent Twiggy Tatsumaki JSON 
+
+# and run the server
+twiggy --listen :8080 -r
+
+# open the page
+open http://localhost:8080/

@@ -1,0 +1,62 @@
+<!doctype html><html>
+  <head>
+    <title>Snapback</title>
+    <link type="text/css" href="/static/cdn/libs/css/yui/reset-base-fonts-min.css" rel="Stylesheet">
+<!--    <link type="text/css" href="/static/cdn/libs/jqueryui/1.8/themes/ui-lightness/jquery.ui.all.css" rel="Stylesheet">
+-->
+    <link type="text/css" href="/static/master.css" rel="Stylesheet">
+    <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
+  </head>
+
+  <body>
+    <div id="content">
+
+      <h2>Servers</h2>
+
+      <span id="status"></span>
+
+      <form id="add-server-form">
+         Add a server: <input type="text" name="server" value="dev2">
+         <input type="submit" value="Add">
+      </form>
+
+      <div id="servers">
+      </div>  
+
+      <div id="log"></div>  
+
+    </div>
+    <script type="text/javascript">
+       var sb = { token: "abc" };
+    </script>
+    <script type="text/javascript" src="/static/cdn/libs/underscore/1/underscore-min.js"></script>
+    <script type="text/javascript" src="/static/cdn/libs/jquery/1.4/jquery.js"></script>
+    <script type="text/javascript" src="/static/cdn/libs/jquery-plugins/cookie/jquery.cookie.js"></script>
+    <script type="text/javascript" src="/static/cdn/libs/jquery-plugins/ev/jquery.ev.js"></script>
+    <script type="text/javascript" src="/static/snapback.js"></script>
+
+    <script type="text/html" id="server_tmpl">
+      <div class="server" data-server="<?= server.name ?>">
+        <h3><?= server.name ?></h3>
+        <div class="server-info">
+          <div class="mounts">
+            <? for (mp in server.mounts) { 
+                 var mount = server.mounts[mp];
+            ?>
+               <input type="checkbox" name="<?= mp ?>" value="1">
+               <?= mp ?>: <?= mount.device ?> (<?= mount.type ?>)<br>
+            <? } ?>  
+          </div>  
+        </div>
+      </div>
+    </script>
+
+    <script type="text/html" id="log_message_tmpl">
+       <div><?= log.msg ?></div><br>
+    </script>
+
+
+  </body>
+</html>
+
+
