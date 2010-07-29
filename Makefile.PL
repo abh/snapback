@@ -18,6 +18,10 @@ WriteMakefile
     'Twiggy'     => 0,
     'Tatsumaki'  => 0,
     'JSON' => 2.12,
+    'File::Slurp' => 0,
+    'KiokuDB' => 0.40,
+    'KiokuDB::Backend::BDB' => 0,
+    'KiokuDB::Backend::Files' => 0,
    },
    MAN3PODS            => { }, # no need for docs on these
    dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

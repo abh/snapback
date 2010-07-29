@@ -30,6 +30,24 @@
     return data ? fn(data) : fn;
   };
 
+var update_server_display = function(server) {
+
+    console.log("updating", server);
+    // find the existing record if it's there already
+    var template = sb.template( $('#server_tmpl').html() );
+
+    var server_div = $("div.server[data-server='" + server.name + "']");
+
+    var html = template({ 'server': server });
+  
+    if (server_div.length > 0) {
+        server_div.html(html);
+    }
+    else {
+        $('#servers').append(html);
+    }
+};
+
 var event_handler = function(e) {
       var msg = e;
       console.log("got payload", e);
@@ -39,22 +57,7 @@ var event_handler = function(e) {
       }
 
       if (msg.type == 'mount' && msg.server && msg.server.name) {
-         // find the existing record if it's there already
-         var template = sb.template( $('#server_tmpl').html() );
-
-         var server = $("div.server[data-server='" + msg.server.name + "']");
-
-         var html = template({ 'server': msg.server });
-  
-         console.log("html", html);
-  
-         if (server.length > 0) {
-            server.html(html);
-         }
-         else {
-            console.log("appending", html);
-            $('#servers').append(html);
-         }
+         update_server_display(msg.server);
       }
 
       console.log("msg", msg);
@@ -71,16 +74,27 @@ $(document).ready(function () {
    var  $add_server_form = $("#add-server-form");
    $add_server_form.find('input:first').focus();
    $add_server_form.find('input:submit').click(function(event) {
+      console.log("running ajax form submit");
       event.preventDefault();
       var name = $add_server_form.find('input[name="server"]').val();
       $.ajax({ url: "/server/add",
-               method: 'post',
+               type: 'post',
                data: { 'token': sb.token, 'server': name },
-               success: function(r) { }
+               dataType: 'json',
+               success: function(r) { console.log("added", r) }
              });
    });
 
- 
+   $.ajax({ url: "/server/",
+            type: 'get',
+            data: { 'token': sb.token, 'list': 1 },
+            dataType: 'json',
+            success: function(r) { 
+              for (i in r) {
+                  update_server_display(r[i]);
+              }
+            }
+          });
 
 });
 

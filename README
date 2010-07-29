@@ -8,9 +8,10 @@ cpan App::cpanminus
 perl Makefile.PL
 
 # ... and install them
-cpanm --sudo AnyEvent Twiggy Tatsumaki JSON 
+cpanm --sudo AnyEvent Twiggy Tatsumaki JSON KiokuDB KiokuDB::Backend::Files
 
 # and run the server
+mkdir /tmp/snapback  # temporarily
 twiggy --listen :8080 -r
 
 # open the page

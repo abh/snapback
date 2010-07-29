@@ -1,8 +1,6 @@
 package Snapback;
-use strict;
 use Moose;
-
-warn "$$ going to run ...";
+our $VERSION = '0.01';
 
 # load configuration
 # count of currently running rsync processes

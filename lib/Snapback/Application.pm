@@ -9,10 +9,13 @@ use Snapback::Handler::Main;
 use Snapback::Handler::Server;
 use Snapback::Handler::Poll;
 use Snapback::Mounts;
+use Snapback::Util qw(ssh_cmd);
 use AnyEvent;
 use AnyEvent::Util qw(run_cmd);
 
 use namespace::clean;
+
+with 'Snapback::DB';
 
 around BUILDARGS => sub {
     my $orig = shift;
@@ -38,10 +41,6 @@ has testing => (
     default => 0,
 );
 
-sub _ssh_command {
-    my ($host, $cmd) = @_;
-    return ('ssh', 'root@' . $host, $cmd);
-}
 
 sub update_mounts {
     my ($self, $host, $cb) = @_;
@@ -76,11 +75,11 @@ sunrpc on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw)';
         return;
     }
 
-    my $cmd = [ _ssh_command( $host, 'mount' ) ];
+    my $cmd = [ ssh_cmd( $host, 'mount' ) ];
     my $cv = run_cmd($cmd,
                          "<", "/dev/null",
                          ">" , \$std,
-                         "3>", \my $error,
+                         "2>", \my $error,
                         );
     $cv->cb(sub {
                 warn "MOUNTS: $std\n";

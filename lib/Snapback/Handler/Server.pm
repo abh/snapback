@@ -2,10 +2,24 @@ package Snapback::Handler::Server;
 use strict;
 use base qw(Snapback::Handler);
 __PACKAGE__->asynchronous(1);
+use Snapback::Server;
 
 use Time::HiRes ();
 
-sub get { shift->post(@_) }
+sub get {
+    my $self = shift;
+    if ($self->request->param('list')) {
+        my $db      = $self->app->db;
+        my $scope   = $db->new_scope;
+        my @entries = $db->root_set->all;
+        $self->write(
+            [   map { +{name => $_->name, connection_ok => $_->connection_ok} }
+                  @entries
+            ]
+        );
+        $self->finish;
+    }
+}
 
 sub post {
     my $self = shift;
@@ -17,34 +31,50 @@ sub post {
 
     unless ($server_name) {
         $self->write({ success => 0,
-                       type => 'mount',
-                       status => 'No server' });
+                       status => 'No server parameter' });
         $self->finish;
     }
 
-    my $mq = Tatsumaki::MessageQueue->instance('snapback');
+    # TODO: check if the server already exists...
+
+    my $db = $self->app->db;
+    my $scope = $db->new_scope;
+
+    my $server = Snapback::Server->new(name => $server_name);
+    $db->store( $server_name => $server );
+    
+
+    my $mq = Tatsumaki::MessageQueue->instance('log');
     $mq->publish({
-                  type => "mount",
-                  status => "Getting mounts from $server_name",
+                  type => "log",
+                  status => "Checking connection to $server_name",
                   time => scalar Time::HiRes::gettimeofday,
                  });
 
-    $self->app->update_mounts
-      ($server_name,
-       sub {
-           my $mounts = shift;
-           warn "got mounts";
+    $server->check_connection(
+        sub {
+            my $ok = shift;
+            my $ok_msg = $ok ? "ok" : "not ok";
 
-           $mq->publish({
-                         type => "mount",
-                         time => scalar Time::HiRes::gettimeofday,
-                         status => 'Updated mounts',
-                         server => { name   => $server_name,
-                                     mounts => $mounts,
-                                   },
-                        });
-       }
-      );
+            my $scope = $db->new_scope;
+            $db->store($server);
+
+            $mq->publish(
+                {   type   => "log",
+                    time   => scalar Time::HiRes::gettimeofday,
+                    status => "Connection to ". $server->name . " was $ok_msg",
+                }
+            );
+
+            $self->write(
+                {   success => $ok,
+                    status  => "Connection check to " . $server->name . " (" . $server->uname . ")",
+                }
+            );
+            $self->finish;
+
+        }
+    );
 
 }
 1;
